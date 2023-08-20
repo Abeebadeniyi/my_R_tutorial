@@ -192,4 +192,17 @@ height_and_weight_20_2 %>% filter(!is.na(sex_f)) %>% count(sex_f) %>%
 
 # use the freq_table from the freqtables package to calculate the freq:
 
-install.packages("freqtables") # not installing on my macbook.
+install.packages("freqtables") 
+library(freqtables)
+
+# method 1: nested way
+freq_table(height_and_weight_20_2 %>% drop_na(), sex_f)
+
+# method 2: tidyverse way using filter to remove NA,
+
+height_and_weight_20_2 %>% filter(!is.na(sex_f)) %>% freq_table(sex_f)
+
+
+
+
+
