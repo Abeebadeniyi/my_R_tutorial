@@ -279,7 +279,7 @@ height_and_weight_20 %>%
   reframe(min_wt_lbs = min(wt_lbs, na.rm = TRUE),
           mean_wt_lbs = mean(wt_lbs, na.rm = TRUE),
           median_wt_lbs = median(wt_lbs, na.rm = TRUE),
-          mode_wt_lbs= modal_func_optimised(wt_lbs, na.rm = TRUE)%>% as.numeric(),
+          mode_wt_lbs= modal_func_optimised(wt_lbs, na.rm = T)%>% as.numeric(),
           max_wt_lbs= max(wt_lbs,na.rm = TRUE) 
   ) # notice the maximum how the maximum weight is 19000, a value which is not
     # probable to occur in reality, Also notice how the mean is sensitive to 
