@@ -1,0 +1,215 @@
+---
+title: "Measure of dispersion"
+output: html_document
+date: "2023-08-24"
+---
+
+# load tidyverse,knitr and meantables packages
+```{r}
+library(tidyverse)
+library(knitr)
+library(meantables)
+library(purrr)
+```
+
+# simulate some data and name it height_and_weight_20
+```{r}
+height_and_weight_20 <- tribble(
+  
+   ~id,   ~sex,   ~ht_in, ~wt_lbs,
+  "001", "Male",   71,     190,
+  "002", "Male",   69,     177,
+  "003", "Female", 64,     130,
+  "004", "Female", 65,     153,
+  "005", NA,       73,     173,
+  "006", "Male",   69,     182,
+  "007", "Female", 68,     186,
+  "008", NA,       73,     185,
+  "009", "Female", 71,     157,
+  "010", "Male",   66,     155,
+  "011", "Male",   71,     213,
+  "012", "Female", 69,     151,
+  "013", "Female", 66,     147,
+  "014", "Female", 68,     196,
+  "015", "Male",   75,     212,
+  "016", "Female", 69,     19000,
+  "017", "Female", 66,     194,
+  "018", "Female", 65,     176,
+  "019", "Female", 65,     176,
+  "020", "Female", 65,     102
+  
+)
+height_and_weight_20
+```
+
+# Let us recreate our mode function
+```{r}
+
+modal_function <- function(x, na.rm = T){
+  
+   freq_count <- table(x)
+   max_value <-  max(freq_count)
+   result <- names(freq_count)[freq_count == max_value]
+   
+   if (length(result) == length(freq_count)){
+     
+     result <- NA
+     return(result)
+   }else{
+     
+     return(result)
+   }
+  }
+
+```
+
+## let us test the modal_function() we just created:
+```{r}
+test <- height_and_weight_20$sex
+modal_function(test)
+
+```
+
+# let us show the mean,median,mode,min and max of ht_in
+
+```{r}
+height_and_weight_20 %>% reframe(
+                                 min_ht_in = min(ht_in),
+                                 mean_ht_in = mean(ht_in),
+                                 median_ht_in = median(ht_in),
+                                 mode_ht_in = modal_function(ht_in),
+                                 max_ht_in = max(ht_in)
+  
+  )
+
+
+```
+**NB:** 
+Notice how we have two rows in our result. This is because we have two
+values for mode (**65** and **69**). We can fix this by using the **paste()** with the **collapse** argument specified within the function as shown below:
+
+```{r}
+height_and_weight_20 %>% reframe(
+                                 min_ht_in = min(ht_in),
+                                 mean_ht_in = mean(ht_in),
+                                 median_ht_in = median(ht_in),
+                                 mode_ht_in = modal_function(ht_in) %>% 
+                                                 paste(collapse = " , "),
+                                 max_ht_in = max(ht_in)
+  
+  )
+
+
+```
+Now we got our desired result.
+
+
+
+# How to measure dispersion from the centre
+
+**Three common measures of dispersion used are the:**
+
+1. Range,
+2. Variance,
+3. Standard Deviation
+
+
+##### **RANGE**
+let us show how to calculate a range
+```{r}
+
+height_and_weight_20 %>% 
+  reframe(
+    min_height  = min(ht_in),
+    mean_height = mean(ht_in),
+    max_height  = max(ht_in),
+    range       = max_height - min_height
+
+    
+)
+
+```
+In this case, the range is 11. The range can be useful because it tells us how much difference there is between the tallest person in our class and the shortest person in our class – 11 inches. However, it doesn’t tell us how close to 68.4 inches “most” people in the class are.
+
+In other words, are most people in the class out at the edges of the range of values in the data? 
+
+Or are people “evenly distributed” across the range of heights for the class? 
+
+Or something else entirely?
+
+
+
+##### **VARIANCE**
+
+Let us simulate some data
+```{r}
+demo1 <- c(rep(52,12), rep(85,9))
+demo1
+
+```
+
+Now let us calculate the variance by using the **var()** function in R
+```{r}
+
+var(demo1)
+# let us round this up to 2 decimal places:
+round(var(demo1), 2)
+```
+##### **STANDARD DEVIATION**
+This is the square root of variance. it can be calculate in r using **sd()**
+function. 
+
+**Example:**
+```{r}
+sd(demo1)
+# round up to 2 decimal places:
+round(sd(demo1), 2)
+```
+
+# Comparing distributions:
+
+Let us simulate some data:
+```{r}
+
+sim_data <- tibble(
+  all_68     = rep(68, 20),
+  half_58_78 = c(rep(58, 10), rep(78, 10)),
+  even_58_78 = seq(from = 58, to = 78, length.out = 20),
+  half_48_88 = c(rep(48, 10), rep(88, 10)),
+  even_48_88 = seq(from = 48, to = 88, length.out = 20)
+)
+sim_data
+
+
+
+```
+Now let us use the purrr package's function to get the mean, variance and stan
+dard deviation for each of the columns in **sim_data**
+```{r}
+
+tibble(
+  Column   = names(sim_data),
+  Mean     = purrr::map_dbl(sim_data, mean),
+  Variance = purrr::map_dbl(sim_data, var),
+  SD       = purrr::map_dbl(sim_data, sd)
+)
+
+```
+**NB:**
+
+1. We used the map_dbl from the purr package to iterate over over the sim_data
+
+2. So, for all the columns the mean is 68 inches.However, the variance and standard deviation are quite different.
+
+3. For the column named “all_68”, the variance and standard deviation are both zero. If you think about it, this should make perfect sense: all the values are 68 – they don’t vary – and each observations distance from the mean (68)
+is zero.
+
+4. Now compare "all_68" column to the rest of the columns. Do you notice how all of them have a non-zero variance? This is because the values in these columns differ – i.e they vary. Additionally, we can see very clearly that variance (and standard deviation) are affected by at least two things:
+
+a. First is the distribution of values across the range of possible values. For example, half_58_78 and half_48_88 have a larger variance than even_58_78 and even_48_88 because all the values are clustered at the min and max - far away from the mean.
+
+b. The second property of the data that can affect variance is the width of the range of values included in the distribution. For example, even_48_88 has a larger variance and standard deviation than even_58_78, even though both are evenly distributed across the range of possible values. The reason for this
+is rooted in range of possible values between the two groups(which is larger in even_48_88), and therefore the range of distances from the mean is larger too.
+
+
+Broadly, the variance is larger **when values are clustered at very low or very high values away from the mean**, or **when values are spread across a wider range**.
